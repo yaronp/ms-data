@@ -1,0 +1,88 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Clusters_yaronadx_name": {
+            "defaultValue": "yaronadx",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Kusto/Clusters",
+            "apiVersion": "2022-02-01",
+            "name": "[parameters('Clusters_yaronadx_name')]",
+            "location": "East US",
+            "sku": {
+                "name": "Dev(No SLA)_Standard_E2a_v4",
+                "tier": "Basic",
+                "capacity": 1
+            },
+            "zones": [
+                "3"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "trustedExternalTenants": [],
+                "enableDiskEncryption": false,
+                "enableStreamingIngest": false,
+                "enablePurge": false,
+                "enableDoubleEncryption": false,
+                "engineType": "V3",
+                "acceptedAudiences": [],
+                "restrictOutboundNetworkAccess": "Disabled",
+                "allowedFqdnList": [],
+                "publicNetworkAccess": "Enabled",
+                "allowedIpRangeList": [],
+                "enableAutoStop": true,
+                "publicIPType": "IPv4"
+            }
+        },
+        {
+            "type": "Microsoft.Kusto/Clusters/Databases",
+            "apiVersion": "2022-02-01",
+            "name": "[concat(parameters('Clusters_yaronadx_name'), '/MachineScoreScores')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Kusto/Clusters', parameters('Clusters_yaronadx_name'))]"
+            ],
+            "kind": "ReadWrite",
+            "properties": {
+                "softDeletePeriod": "P120D",
+                "hotCachePeriod": "P7D"
+            }
+        },
+        {
+            "type": "Microsoft.Kusto/Clusters/PrincipalAssignments",
+            "apiVersion": "2022-02-01",
+            "name": "[concat(parameters('Clusters_yaronadx_name'), '/7cb53c8c-8394-4016-bc41-ef406106f9f2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Kusto/Clusters', parameters('Clusters_yaronadx_name'))]"
+            ],
+            "properties": {
+                "principalId": "92e4ad2b-0d50-4fa1-9429-f9b5e04f6399",
+                "role": "AllDatabasesAdmin",
+                "principalType": "App",
+                "tenantId": "a67d4b16-f292-4015-a19b-2488e1b0db1e"
+            }
+        },
+        {
+            "type": "Microsoft.Kusto/Clusters/Databases/PrincipalAssignments",
+            "apiVersion": "2022-02-01",
+            "name": "[concat(parameters('Clusters_yaronadx_name'), '/MachineScoreScores/95531a51-d8d7-4ee2-976f-8c2ed6077c13')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Kusto/Clusters/Databases', parameters('Clusters_yaronadx_name'), 'MachineScoreScores')]",
+                "[resourceId('Microsoft.Kusto/Clusters', parameters('Clusters_yaronadx_name'))]"
+            ],
+            "properties": {
+                "principalId": "yaronp@gmail.com",
+                "role": "Admin",
+                "principalType": "User",
+                "tenantId": "a67d4b16-f292-4015-a19b-2488e1b0db1e"
+            }
+        }
+    ]
+}
